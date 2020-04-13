@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - master
+    tags:
+      - '*'
   pull_request:
     branches:
       - master
-  release:
-    types: [published]
 
 jobs:
   build:
@@ -46,33 +46,38 @@ jobs:
   release:
     name: Upload Release Asset
     runs-on: ubuntu-latest
-    if: github.event_name == 'release'
+    if: startsWith(github.ref, 'refs/tags/')
     needs: [build]
 
     steps:
-      - name: Set version
-        run: echo ::set-env name=VERSION::$(cat $GITHUB_EVENT_PATH | jq -r .tag_name)
-
-      - name: Set upload_url
-        run: echo ::set-env name=UPLOAD_URL::$(cat $GITHUB_EVENT_PATH | jq -r .upload_url)
-
       - name: Download artifact (macos-latest)
         uses: actions/download-artifact@v1
         with:
           name: AV_Data_Capture-macos-latest
-          path: AVDC-CLI-${version}-macos-x86_64.zip
+          path: AVDC-CLI-macos-x86_64.zip
 
       - name: Download artifact (windows-latest)
         uses: actions/download-artifact@v1
         with:
           name: AV_Data_Capture-windows-latest
-          path: AVDC-CLI-${version}-windows-x86_64.zip
+          path: AVDC-CLI-windows-x86_64.zip
 
       - name: Download artifact (ubuntu-latest)
         uses: actions/download-artifact@v1
         with:
           name: AV_Data_Capture-ubuntu-latest
-          path: AVDC-CLI-${version}-ubuntu-x86_64.zip
+          path: AVDC-CLI-ubuntu-x86_64.zip
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
 
       - name: Upload Release Asset
         id: upload-release-asset
@@ -80,7 +85,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${upload_url}
-          asset_path: AVDC-CLI-${version}-macos-x86_64.zip
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: AVDC-CLI-ubuntu-x86_64.zip
           asset_name: my-artifact.zip
           asset_content_type: application/zip
+
+#      - name: Upload Release Asset
+#        id: upload-release-asset
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${upload_url}
+#          asset_path: AVDC-CLI-${version}-macos-x86_64.zip
+#          asset_name: my-artifact.zip
+#          asset_content_type: application/zip
