@@ -246,22 +246,21 @@ def download_file_with_filename(url, filename, path, conf: config.Config, filepa
 
 # 封面是否下载成功，否则移动到failed
 def image_download(cover, number, c_word, path, conf: config.Config, filepath, failed_folder):
-    if download_file_with_filename(cover, number + c_word + '-fanart.jpg', path, conf, filepath, failed_folder) == 'failed':
+    if download_file_with_filename(cover, number + c_word + '.jpg', path, conf, filepath, failed_folder) == 'failed':
         moveFailedFolder(filepath, failed_folder)
         return
 
     _proxy, _timeout, retry, _proxytype = conf.proxy()
     for i in range(retry):
-        if os.path.getsize(path + '/' + number + c_word + '-fanart.jpg') == 0:
+        if os.path.getsize(path + '/' + number + c_word + '.jpg') == 0:
             print('[!]Image Download Failed! Trying again. [{}/3]', i + 1)
-            download_file_with_filename(cover, number + c_word + '-fanart.jpg', path, conf, filepath, failed_folder)
+            download_file_with_filename(cover, number + c_word + '.jpg', path, conf, filepath, failed_folder)
             continue
         else:
             break
-    if os.path.getsize(path + '/' + number + c_word + '-fanart.jpg') == 0:
+    if os.path.getsize(path + '/' + number + c_word + '.jpg') == 0:
         return
-    print('[+]Image Downloaded!', path + '/' + number + c_word + '-fanart.jpg')
-    shutil.copyfile(path + '/' + number + c_word + '-fanart.jpg',path + '/' + number + c_word + '-thumb.jpg')
+    print('[+]Image Downloaded!', path + '/' + number + c_word + '.jpg')
 
 
 def print_files(path, c_word, naming_rule, part, cn_sub, json_data, filepath, failed_folder, tag, actor_list, liuchu):
@@ -482,17 +481,17 @@ def core_main(file_path, number_th, conf: config.Config):
             number += part  # 这时number会被附加上CD1后缀
 
         # 检查小封面
-        if imagecut == 3:
-            small_cover_check(path, number, json_data['cover_small'], c_word, conf, filepath, conf.failed_folder())
+        # if imagecut == 3:
+        #     small_cover_check(path, number, json_data['cover_small'], c_word, conf, filepath, conf.failed_folder())
 
         # creatFolder会返回番号路径
         image_download(json_data['cover'], number, c_word, path, conf, filepath, conf.failed_folder())
 
         # 裁剪图
-        cutImage(imagecut, path, number, c_word)
+        # cutImage(imagecut, path, number, c_word)
 
         # 打印文件
-        print_files(path, c_word, json_data['naming_rule'], part, cn_sub, json_data, filepath, conf.failed_folder(), tag, json_data['actor_list'], liuchu)
+        # print_files(path, c_word, json_data['naming_rule'], part, cn_sub, json_data, filepath, conf.failed_folder(), tag, json_data['actor_list'], liuchu)
 
         # 移动文件
         paste_file_to_folder(filepath, path, number, c_word, conf)
