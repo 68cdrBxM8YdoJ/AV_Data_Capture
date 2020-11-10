@@ -21,8 +21,8 @@ def check_update(local_version):
 def argparse_function(ver: str) -> [str, str, bool]:
     parser = argparse.ArgumentParser()
     parser.add_argument("file", default='', nargs='?', help="Single Movie file path.")
-    parser.add_argument("-c", "--config", default='config.ini', nargs='?', help="The config file Path.")
-    parser.add_argument("-n", "--number", default='', nargs='?',help="Custom file number")
+    parser.add_argument("-c", "--config", default=os.path.join(os.getcwd(), "config.ini"), nargs="?", help="The config file Path.")
+    parser.add_argument("-n", "--number", default='', nargs='?', help="Custom file number")
     parser.add_argument("--version", action="version", version=ver)
     args = parser.parse_args()
 
